@@ -96,7 +96,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     // MARK: - public functions
     
-    public func loadAd() {
+    public func load() {
         bannerView.load(GADRequest())
     }
     
@@ -234,7 +234,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         if reloadOnError {
             DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
                 print("loading Ad async")
-                self?.loadAd()
+                self?.load()
             }
         }
     }
@@ -255,7 +255,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         print(#function)
         DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
             print("re load after dismiss")
-            self?.loadAd()
+            self?.load()
         }
     }
     
