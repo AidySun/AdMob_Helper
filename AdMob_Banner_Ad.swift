@@ -269,17 +269,17 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
 
 
 /* Usage sample:
-      var bannerAd = AdMob_Banner_Ad(toViewController: self,
-                                   at: .bottom,
-                                   withOrientation: .landscape,
-                                   withVolumeRatio: 0.1,
-                                   showHideTimeInterval: 60,
-                                   showOnReceive: true,
-                                   reloadOnError: true,
-                                   secondsToReload: 60)
-
-      bannerAd.loadAd()
-      bannerAd.show()
+ 
+var bannerAd = AdMob_Banner_Ad(toViewController: self,
+                               at: .bottom,
+                               withOrientation: .landscape,
+                               withVolumeRatio: 0.1,
+                               timeInterval: 60,
+                               showOnReceive: true,
+                               reloadOnError: true)
+bannerAd.load()
+bannerAd.show()
+ 
 */
 
 
