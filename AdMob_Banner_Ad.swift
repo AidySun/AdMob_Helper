@@ -13,12 +13,6 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     // MARK: - Properties
     
-    //private let ADMOB_APP_ID_TEST = "ca-app-pub-3940256099942544~1458002511"
-    //private let AD_UNIT_ID_TEST = "ca-app-pub-3940256099942544/2934735716"
-    
-    private let YOUR_ADMOB_APP_ID = "ca-app-pub-4973773111704076~2155614035"  
-    private let YOUR_AD_UNIT_ID = "ca-app-pub-4973773111704076/6278336656"  
-    
     // banner ad position in parent view
     enum Position {case top, bottom}
     // portrait or landscape
@@ -41,13 +35,20 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     private override init() {}
     
-    convenience init(toViewController rootViewController: UIViewController,
+    convenience init(admobAppID: String,
+                     adUnitID: String,
+                     toViewController rootViewController: UIViewController,
                      withOrientation orientation: Orientation) {
         self.init()
-        self.initialize(toViewController: rootViewController, withOrientation: orientation)
+        self.initialize(admobAppID: admobAppID,
+                        adUnitID: adUnitID,
+                        toViewController: rootViewController,
+                        withOrientation: orientation)
     }
     
-    convenience init(toViewController rootViewController: UIViewController, 
+    convenience init(admobAppID: String,
+                     adUnitID: String,
+                     toViewController rootViewController: UIViewController,
                      at position: Position,
                      withOrientation orientation: Orientation,
                      withVolumeRatio volume: Float,
@@ -63,13 +64,18 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         self.position = position
         GADMobileAds.sharedInstance().applicationVolume = volume
         
-        self.initialize(toViewController: rootViewController, withOrientation: orientation)
+        self.initialize(admobAppID: admobAppID,
+                        adUnitID: adUnitID,
+                        toViewController: rootViewController,
+                        withOrientation: orientation)
     }
     
-    fileprivate func initialize(toViewController rootViewController: UIViewController,
+    fileprivate func initialize(admobAppID: String,
+                                adUnitID: String,
+                                toViewController rootViewController: UIViewController,
                                 withOrientation orientation: Orientation) {
         
-        GADMobileAds.configure(withApplicationID: YOUR_ADMOB_APP_ID)
+        GADMobileAds.configure(withApplicationID: admobAppID)
         // disable crash and purchase reporting, enable them if you want
         GADMobileAds.disableSDKCrashReporting()
         GADMobileAds.disableAutomatedInAppPurchaseReporting()
@@ -77,7 +83,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         let adSize = (orientation == .portrait) ? kGADAdSizeSmartBannerPortrait : kGADAdSizeSmartBannerLandscape
         bannerView = GADBannerView(adSize: adSize)
         
-        bannerView.adUnitID = YOUR_AD_UNIT_ID
+        bannerView.adUnitID = adUnitID
         bannerView.rootViewController = rootViewController
         bannerView.delegate = self
         
@@ -269,8 +275,11 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
 
 
 /* Usage sample:
+
  
-var bannerAd = AdMob_Banner_Ad(toViewController: self,
+ var bannerAd = AdMob_Banner_Ad(admobAppID: "ca-app-pub-3940256099942544~1458002511",  // test id
+                               adUnitID: "ca-app-pub-3940256099942544/2934735716",  // test id
+                               toViewController: self,
                                at: .bottom,
                                withOrientation: .landscape,
                                withVolumeRatio: 0.1,
