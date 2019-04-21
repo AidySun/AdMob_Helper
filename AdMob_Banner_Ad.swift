@@ -95,6 +95,10 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     }
 
     deinit {
+        invalidateTimer()
+    }
+    
+    fileprivate func invalidateTimer() {
         if nil != timer {
             timer.invalidate()
         }
@@ -108,6 +112,12 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     public func show() {
         addBannerViewToView(bannerView, at: position)
+    }
+    
+    public func stop() {
+        self.bannerView.isHidden = true
+        invalidateTimer()
+        self.bannerView.isHidden = true
     }
     
     // MARK: - private functions
@@ -248,6 +258,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     /// Tells the delegate that a full-screen view will be presented in response
     /// to the user clicking on an ad.
     func adViewWillPresentScreen(_ bannerView: GADBannerView) {
+        loggingPrint("adViewWillPresentScreen")
         print(#function)
     }
     
@@ -258,6 +269,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     /// Tells the delegate that the full-screen view has been dismissed.
     func adViewDidDismissScreen(_ bannerView: GADBannerView) {
+        loggingPrint("adViewDidDismissScreen")
         print(#function)
         DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
             print("re load after dismiss")
