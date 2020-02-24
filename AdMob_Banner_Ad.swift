@@ -238,7 +238,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     /// Tells the delegate an ad request loaded an ad.
     func adViewDidReceiveAd(_ bannerView: GADBannerView) {
-        print(#function)
+        loggingPrint(#function)
         
         if showOnReceive {
             show()
@@ -248,11 +248,11 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     /// Tells the delegate an ad request failed.
     func adView(_ bannerView: GADBannerView,
                 didFailToReceiveAdWithError error: GADRequestError) {
-        print("\(#function): \(error.localizedDescription)")
+        loggingPrint("\(#function): \(error.localizedDescription)")
         
         if reloadOnError {
             DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
-                print("loading Ad async")
+                loggingPrint("loading Ad async")
                 self?.load()
             }
         }
@@ -261,21 +261,19 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     /// Tells the delegate that a full-screen view will be presented in response
     /// to the user clicking on an ad.
     func adViewWillPresentScreen(_ bannerView: GADBannerView) {
-        loggingPrint("adViewWillPresentScreen")
-        print(#function)
+        loggingPrint(#function)
     }
     
     /// Tells the delegate that the full-screen view will be dismissed.
     func adViewWillDismissScreen(_ bannerView: GADBannerView) {
-        print(#function)
+        loggingPrint(#function)
    }
     
     /// Tells the delegate that the full-screen view has been dismissed.
     func adViewDidDismissScreen(_ bannerView: GADBannerView) {
-        loggingPrint("adViewDidDismissScreen")
-        print(#function)
+        loggingPrint(#function)
         DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
-            print("re load after dismiss")
+            loggingPrint("re load after dismiss")
             self?.load()
         }
     }
@@ -283,7 +281,7 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     /// Tells the delegate that a user click will open another app (such as
     /// the App Store), backgrounding the current app.
     func adViewWillLeaveApplication(_ bannerView: GADBannerView) {
-        print(#function)
+        loggingPrint(#function)
     }
     
 }
