@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Dispatch
 import GoogleMobileAds
 
 class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
@@ -115,9 +116,11 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     }
     
     public func stop() {
-        self.bannerView.isHidden = true
-        invalidateTimer()
-        self.bannerView.isHidden = true
+        DispatchQueue.main.async {
+            self.bannerView.isHidden = true
+            self.invalidateTimer()
+            self.bannerView.isHidden = true
+        }
     }
     
     // MARK: - private functions
