@@ -6,8 +6,16 @@
 //  Copyright © 2018 Aidy. All rights reserved.
 //
 
+/*
+v1.0: 
+  - sdk 7.31, initialize version
+v2.0:
+  - sdk 7.56, in Info.plist add GADIsAdManagerApp, GADApplicationIdentifier and "App Transport Security Settings" items.
+  - set auto fresh on Admob management
+  - use test unit ID for testing
+*/
+
 import UIKit
-import Dispatch
 import GoogleMobileAds
 
 class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
@@ -25,64 +33,63 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     
     fileprivate var position = Position.top
     fileprivate var showOnReceive = true
-    fileprivate var reloadOnError = true
     fileprivate var timer: Timer!
     
-    // interval for 1. seconds to wait before reloading (when error occurred or dismissed)
-    //              2. switch show/hide status of banner view
-    fileprivate var timeInterval: TimeInterval = 60
+    // interval for  switch show/hide status of banner view , 0 to always show
+    fileprivate var timeInterval: TimeInterval = 45
 
+    // MARK: - start Ads SDK
+    class func startSDK() {
+        loggingPrint("initializing Ads SDK")
+        // Initialize Google Mobile Ads SDK
+        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        loggingPrint("initialization finished. version \(GADRequest.sdkVersion())")
+    }
     // MARK: - init and deinit
     
     private override init() {}
     
-    convenience init(admobAppID: String,
-                     adUnitID: String,
+    convenience init(adUnitID: String,
                      toViewController rootViewController: UIViewController,
                      withOrientation orientation: Orientation) {
         self.init()
-        self.initialize(admobAppID: admobAppID,
-                        adUnitID: adUnitID,
+        self.initialize(adUnitID: adUnitID,
                         toViewController: rootViewController,
                         withOrientation: orientation)
     }
     
-    convenience init(admobAppID: String,
-                     adUnitID: String,
+    convenience init(adUnitID: String,
                      toViewController rootViewController: UIViewController,
                      at position: Position,
                      withOrientation orientation: Orientation,
                      withVolumeRatio volume: Float,
                      timeInterval seconds: TimeInterval,
-                     showOnReceive: Bool,
-                     reloadOnError: Bool) {
+                     showOnReceive: Bool) {
         
         self.init()
         
         timeInterval = seconds
         self.showOnReceive = showOnReceive
-        self.reloadOnError = reloadOnError
         self.position = position
         GADMobileAds.sharedInstance().applicationVolume = volume
         
-        self.initialize(admobAppID: admobAppID,
-                        adUnitID: adUnitID,
+        self.initialize(adUnitID: adUnitID,
                         toViewController: rootViewController,
                         withOrientation: orientation)
     }
     
-    fileprivate func initialize(admobAppID: String,
-                                adUnitID: String,
+    fileprivate func initialize(adUnitID: String,
                                 toViewController rootViewController: UIViewController,
                                 withOrientation orientation: Orientation) {
         
-        GADMobileAds.configure(withApplicationID: admobAppID)
+        loggingPrint("AdMob Banner Ad initialize")
         // disable crash and purchase reporting, enable them if you want
-        GADMobileAds.disableSDKCrashReporting()
-        GADMobileAds.disableAutomatedInAppPurchaseReporting()
+        GADMobileAds.sharedInstance().disableSDKCrashReporting()
+        GADMobileAds.sharedInstance().disableAutomatedInAppPurchaseReporting()
 
         let adSize = (orientation == .portrait) ? kGADAdSizeSmartBannerPortrait : kGADAdSizeSmartBannerLandscape
         bannerView = GADBannerView(adSize: adSize)
+        loggingPrint("banner view size is \(bannerView.frame), ads size is \(bannerView.adSize)")
         
         bannerView.adUnitID = adUnitID
         bannerView.rootViewController = rootViewController
@@ -91,15 +98,22 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         self.vc = rootViewController
         self.view = rootViewController.view
         
-        // start timer
-        startTimer()
+        setStatuesOfBannerView()
+        
+    }
+    
+    func setStatuesOfBannerView() {
+        
+        loggingPrint("set banner view show hide with time interval value ( \(self.timeInterval) ) ")
+        
+        if self.timeInterval > 0 {
+            startTimer()
+        } else {
+         self.bannerView.isHidden = false
+        }
     }
 
     deinit {
-        invalidateTimer()
-    }
-    
-    fileprivate func invalidateTimer() {
         if nil != timer {
             timer.invalidate()
         }
@@ -115,19 +129,15 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
         addBannerViewToView(bannerView, at: position)
     }
     
-    public func stop() {
-        DispatchQueue.main.async {
-            self.bannerView.isHidden = true
-            self.invalidateTimer()
-            self.bannerView.isHidden = true
-        }
-    }
-    
     // MARK: - private functions
     
     private func startTimer() {
         if nil == self.timer {
-            self.timer = Timer.scheduledTimer(timeInterval: timeInterval, target: self, selector: #selector(switchBannerStatus), userInfo: nil, repeats: true)
+            self.timer = Timer.scheduledTimer(timeInterval: timeInterval,
+                                              target: self,
+                                              selector: #selector(switchBannerStatus),
+                                              userInfo: nil,
+                                              repeats: true)
         }
     }
     
@@ -139,26 +149,19 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     // MARK: - Positioning Ad Banner
     
     private func addBannerViewToView(_ bannerView: GADBannerView, at position: Position) {
+        loggingPrint("addBannerViewToView")
+        
         bannerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(bannerView)
         
+        switch position {
+        case .top: positionBannerViewFullWidthAtTopOfSafeArea(bannerView)
+        default  : positionBannerViewFullWidthAtBottomOfSafeArea(bannerView)
+        }
         
-        if #available(iOS 11.0, *) {
-            switch position {
-            case .top: positionBannerViewFullWidthAtTopOfSafeArea(bannerView)
-            default  : positionBannerViewFullWidthAtBottomOfSafeArea(bannerView)
-            }
-        }
-        else {
-            switch position {
-            case .top: positionBannerViewFullWidthAtTopOfView(bannerView)
-            default  : positionBannerViewFullWidthAtBottomOfView(bannerView)
-            }
-        }
     }
     
     
-    @available (iOS 11, *)
     private func positionBannerViewFullWidthAtBottomOfSafeArea(_ bannerView: UIView) {
         // Position the banner. Stick it to the bottom of the Safe Area.
         // Make it constrained to the edges of the safe area.
@@ -170,7 +173,6 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
             ])
     }
     
-    @available (iOS 11, *)
     private func positionBannerViewFullWidthAtTopOfSafeArea(_ bannerView: UIView) {
         // Position the banner. Stick it to the top of the Safe Area.
         // Make it constrained to the edges of the safe area.
@@ -181,58 +183,6 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
             guide.topAnchor.constraint(equalTo: bannerView.topAnchor)
             ])
     }
-    
-    // @available (iOS 7, *)
-    private func positionBannerViewFullWidthAtTopOfView(_ bannerView: UIView) {
-        
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .leading,
-                                              relatedBy: .equal,
-                                              toItem: view,
-                                              attribute: .leading,
-                                              multiplier: 1,
-                                              constant: 0))
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .trailing,
-                                              relatedBy: .equal,
-                                              toItem: view,
-                                              attribute: .trailing,
-                                              multiplier: 1,
-                                              constant: 0))
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .top,
-                                              relatedBy: .equal,
-                                              toItem: vc.topLayoutGuide,
-                                              attribute: .bottom,
-                                              multiplier: 1,
-                                              constant: 0))
-    }
-    
-    private func positionBannerViewFullWidthAtBottomOfView(_ bannerView: UIView) {
-        
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .leading,
-                                              relatedBy: .equal,
-                                              toItem: view,
-                                              attribute: .leading,
-                                              multiplier: 1,
-                                              constant: 0))
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .trailing,
-                                              relatedBy: .equal,
-                                              toItem: view,
-                                              attribute: .trailing,
-                                              multiplier: 1,
-                                              constant: 0))
-        view.addConstraint(NSLayoutConstraint(item: bannerView,
-                                              attribute: .bottom,
-                                              relatedBy: .equal,
-                                              toItem: vc.bottomLayoutGuide,
-                                              attribute: .top,
-                                              multiplier: 1,
-                                              constant: 0))
-    }
-    
     
     // MARK: - Delegation
     
@@ -248,14 +198,9 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     /// Tells the delegate an ad request failed.
     func adView(_ bannerView: GADBannerView,
                 didFailToReceiveAdWithError error: GADRequestError) {
-        loggingPrint("\(#function): \(error.localizedDescription)")
+        loggingPrint("\(#function): code: \(error.code) , desc: \(error.localizedDescription)")
         
-        if reloadOnError {
-            DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
-                loggingPrint("loading Ad async")
-                self?.load()
-            }
-        }
+        /// Note: If your ad fails to load, you don't need to explicitly request another one as long as you've configured your ad unit to refresh; the Google Mobile Ads SDK respects any refresh rate you specified in the AdMob UI.
     }
     
     /// Tells the delegate that a full-screen view will be presented in response
@@ -290,15 +235,14 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
 /* Usage sample:
 
  
- var bannerAd = AdMob_Banner_Ad(admobAppID: "ca-app-pub-3940256099942544~1458002511",  // test id
-                               adUnitID: "ca-app-pub-3940256099942544/2934735716",  // test id
+ // ad app id is configured in Info.plist
+ var bannerAd = AdMob_Banner_Ad(adUnitID: "ca-app-pub-3940256099942544/2934735716",  // test id
                                toViewController: self,
                                at: .bottom,
                                withOrientation: .landscape,
                                withVolumeRatio: 0.1,
                                timeInterval: 60,
-                               showOnReceive: true,
-                               reloadOnError: true)
+                               showOnReceive: true)
 bannerAd.load()
 bannerAd.show()
  
