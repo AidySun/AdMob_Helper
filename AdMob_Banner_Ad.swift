@@ -39,12 +39,16 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     fileprivate var timeInterval: TimeInterval = 45
 
     // MARK: - start Ads SDK
+    /* This should be called as early as possible the app starts,
+       e.g. in didFinishLaunchingWithOptions() of AppDelegate
+     */
     class func startSDK() {
         loggingPrint("initializing Ads SDK")
         // Initialize Google Mobile Ads SDK
         GADMobileAds.sharedInstance().start(completionHandler: nil)
         loggingPrint("initialization finished. version \(GADRequest.sdkVersion())")
     }
+    
     // MARK: - init and deinit
     
     private override init() {}
