@@ -128,6 +128,14 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     public func show() {
         addBannerViewToView(bannerView, at: position)
     }
+
+    public func stop() {
+      DispatchQueue.main.async {
+        self.bannerView.isHidden = true
+          self.invalidateTimer()
+          self.bannerView.isHidden = true
+      }
+    }
     
     // MARK: - private functions
     
