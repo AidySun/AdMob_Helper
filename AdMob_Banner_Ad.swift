@@ -114,6 +114,10 @@ class AdMob_Banner_Ad: NSObject, GADBannerViewDelegate {
     }
 
     deinit {
+        invalidateTimer()
+    }
+    
+    fileprivate func invalidateTimer() {
         if nil != timer {
             timer.invalidate()
         }
