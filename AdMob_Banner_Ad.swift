@@ -7,6 +7,8 @@
 //
 
 /*
+v4.0:
+ - add `bannerViewDidReceiveAd(_ bannerView: GADBannerView)`, adViewDidReceiveAd() doesn't work anymore
 v3.0:
   - always show ads bar
   - test with sdk 7.64
