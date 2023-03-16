@@ -36,7 +36,7 @@ class AdMob_Banner_Ad: NSObject {
     
     fileprivate let appURLs = [
         "https://apps.apple.com/app/id1501166219", // Talking Numbers
-        "https://itunes.apple.com/app/id1528477391" // AMClock
+        "https://apps.apple.com/app/id1314360935" // AMClock
     ]
     
     fileprivate var localAdsIndex: Int = 0
@@ -47,7 +47,7 @@ class AdMob_Banner_Ad: NSObject {
     enum Orientation {case portrait, landscape}
     
     fileprivate var vc: UIViewController!
-    fileprivate var bannerView: GADBannerView!
+    var bannerView: GADBannerView!
     fileprivate var view: UIView!
     
     fileprivate var hasAdsReceived = false
@@ -61,6 +61,8 @@ class AdMob_Banner_Ad: NSObject {
     fileprivate let minTimeInterval: TimeInterval = 10
     fileprivate var timeInterval: TimeInterval = 10
     
+    
+    fileprivate var shouldHideBannerAd = false
 
     // MARK: - start Ads SDK
     /* This should be called as early as possible the app starts,
@@ -98,7 +100,9 @@ class AdMob_Banner_Ad: NSObject {
         self.init()
         
         // use default 10 forever ***
-        /// timeInterval = (seconds < 1) ? minTimeInterval : seconds
+        timeInterval = (seconds < 1) ? minTimeInterval : seconds
+        loggingPrint("YDIA: timeInterval = \(timeInterval)")
+        
         self.showOnReceive = showOnReceive
         self.position = position
         GADMobileAds.sharedInstance().applicationVolume = volume
@@ -201,7 +205,7 @@ class AdMob_Banner_Ad: NSObject {
     // MARK: - private functions
     
     private func startTimer() {
-        if nil == self.timer {
+        if nil == self.timer && timeInterval > 0 {
             self.timer = Timer.scheduledTimer(timeInterval: timeInterval,
                                               target: self,
                                               selector: #selector(switchBannerStatusForTimer),
@@ -212,19 +216,21 @@ class AdMob_Banner_Ad: NSObject {
 
     
     @objc private func switchBannerStatusForTimer() {
-        localAdsView.isHidden = hasAdsReceived //|| shouldHideBannerAd
-        bannerView.isHidden = !hasAdsReceived //|| shouldHideBannerAd
+        localAdsView.isHidden = hasAdsReceived || shouldHideBannerAd
+        bannerView.isHidden = !hasAdsReceived || shouldHideBannerAd
+        localAdsIndex += 1
         
-        if localAdsIndex+1 > 1 {
-            localAdsIndex = 0
-        } else {
-            localAdsIndex += 1
-        }
-
+        
+        shouldHideBannerAd = !shouldHideBannerAd
+        
         self.localAdsView.image = nil
         if !hasAdsReceived {
-            let img =  UIImage(named: previewImagesNames[localAdsIndex])
+            let img =  UIImage(named: previewImagesNames[localAdsIndex/2])
             self.localAdsView.image = img
+        }
+        
+        if localAdsIndex >= 3 {
+            localAdsIndex = 0
         }
     }
 
