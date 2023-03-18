@@ -101,7 +101,7 @@ class AdMob_Banner_Ad: NSObject {
         
         // use default 10 forever ***
         timeInterval = (seconds < 1) ? minTimeInterval : seconds
-        loggingPrint("YDIA: timeInterval = \(timeInterval)")
+        loggingPrint("timeInterval = \(timeInterval)")
         
         self.showOnReceive = showOnReceive
         self.position = position
