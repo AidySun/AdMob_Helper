@@ -26,42 +26,44 @@ import UIKit
 import GoogleMobileAds
 
 class AdMob_Banner_Ad: NSObject {
-    
+
     // MARK: - Properties
-    
+
     fileprivate let previewImagesNames = [
         "localAdsTalkingNum",
         "localAdsAMClock"
     ]
-    
+
+
     fileprivate let appURLs = [
         "https://apps.apple.com/app/id1501166219", // Talking Numbers
         "https://apps.apple.com/app/id1314360935" // AMClock
     ]
-    
+
+
     fileprivate var localAdsIndex: Int = 0
-    
+
     // banner ad position in parent view
     enum Position {case top, bottom}
     // portrait or landscape
     enum Orientation {case portrait, landscape}
-    
+
     fileprivate var vc: UIViewController!
     var bannerView: GADBannerView!
     fileprivate var view: UIView!
-    
+
     fileprivate var hasAdsReceived = false
     fileprivate var localAdsView = UIImageView()
-    
+
     fileprivate var position = Position.top
     fileprivate var showOnReceive = true
     fileprivate var timer: Timer!
-    
+
     // interval for  switch show/hide status of banner view , 0 to always show
     fileprivate let minTimeInterval: TimeInterval = 10
     fileprivate var timeInterval: TimeInterval = 10
-    
-    
+
+
     fileprivate var shouldHideBannerAd = false
 
     // MARK: - start Ads SDK
@@ -74,21 +76,21 @@ class AdMob_Banner_Ad: NSObject {
         GADMobileAds.sharedInstance().start(completionHandler: nil)
         loggingPrint("[Ads] initialization finished.")
     }
-    
+
     // MARK: - init and deinit
-    
+
     private override init() {}
-    
+
     convenience init(adUnitID: String,
                      toViewController rootViewController: UIViewController,
                      withOrientation orientation: Orientation) {
         self.init()
-        
+
         self.initEverything(adUnitID: adUnitID,
                             toViewController: rootViewController,
                             withOrientation: orientation)
     }
-        
+
     convenience init(adUnitID: String,
                      toViewController rootViewController: UIViewController,
                      at position: Position,
@@ -96,34 +98,34 @@ class AdMob_Banner_Ad: NSObject {
                      withVolumeRatio volume: Float,
                      timeInterval seconds: TimeInterval,
                      showOnReceive: Bool) {
-        
+
         self.init()
-        
+
         // use default 10 forever ***
         timeInterval = (seconds < 1) ? minTimeInterval : seconds
         loggingPrint("timeInterval = \(timeInterval)")
-        
+
         self.showOnReceive = showOnReceive
         self.position = position
         GADMobileAds.sharedInstance().applicationVolume = volume
-        
+
         self.initEverything(adUnitID: adUnitID,
                             toViewController: rootViewController,
                             withOrientation: orientation)
     }
-    
+
     fileprivate func initEverything(adUnitID: String,
                                     toViewController rootViewController: UIViewController,
                                     withOrientation orientation: Orientation) {
         self.vc = rootViewController
         self.view = rootViewController.view
-        
+
         self.initAdsView(adUnitID: adUnitID,
                          withOrientation: orientation)
-        
+
         self.initLocalAdsView(withOrientation: orientation)
     }
-    
+
     fileprivate func initLocalAdsView(withOrientation orientation: Orientation) {
         localAdsView.isHidden = true
 
@@ -131,14 +133,14 @@ class AdMob_Banner_Ad: NSObject {
         self.localAdsView.frame = CGRect(origin: CGPoint(x: 0, y: 0), size:size)
         self.localAdsView.contentMode = .scaleAspectFit
         self.localAdsView.backgroundColor = .black
-        
+
         self.localAdsView.isUserInteractionEnabled = true
         self.localAdsView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(adsViewClicked)))
     }
-    
+
     fileprivate func initAdsView(adUnitID: String,
                                 withOrientation orientation: Orientation) {
-        
+
         // disable crash and purchase reporting, enable them if you want
         GADMobileAds.sharedInstance().disableSDKCrashReporting()
         //GADMobileAds.sharedInstance().disableAutomatedInAppPurchaseReporting()
@@ -146,18 +148,18 @@ class AdMob_Banner_Ad: NSObject {
         let adSize = (orientation == .portrait) ? kGADAdSizeSmartBannerPortrait : kGADAdSizeSmartBannerLandscape
         bannerView = GADBannerView(adSize: adSize)
         loggingPrint("[Ads] banner view size is \(bannerView.frame), ads size is \(bannerView.adSize)")
-        
+
         bannerView.adUnitID = adUnitID
         bannerView.rootViewController = self.vc
         bannerView.delegate = self
-        
+
         setStatuesOfBannerView()
     }
-    
+
     func setStatuesOfBannerView() {
-        
+
         loggingPrint("[Ads] set banner view show hide with time interval value ( \(self.timeInterval) ) ")
-        
+
         if self.timeInterval > 0 {
             startTimer()
         } else {
@@ -168,29 +170,29 @@ class AdMob_Banner_Ad: NSObject {
     deinit {
         invalidateTimer()
     }
-    
+
     fileprivate func invalidateTimer() {
         if nil != timer {
             timer.invalidate()
         }
     }
-    
+
     // MARK: - public functions
-    
+
     public func load() {
         bannerView.load(GADRequest())
     }
-    
+
     // show online ads if received, else show local ads view
     public func show() {
 
         localAdsView.isHidden = hasAdsReceived
         bannerView.isHidden = !hasAdsReceived
-        
+
         //self.localAdsView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(adsViewClicked)))
         self.localAdsView.isUserInteractionEnabled = true
         let adsView: UIView = hasAdsReceived ? bannerView : localAdsView
-        
+
         addAdsView(adsView, toPosition: position)
     }
 
@@ -203,7 +205,7 @@ class AdMob_Banner_Ad: NSObject {
     }
 
     // MARK: - private functions
-    
+
     private func startTimer() {
         if nil == self.timer && timeInterval > 0 {
             self.timer = Timer.scheduledTimer(timeInterval: timeInterval,
@@ -214,21 +216,21 @@ class AdMob_Banner_Ad: NSObject {
         }
     }
 
-    
+
     @objc private func switchBannerStatusForTimer() {
         localAdsView.isHidden = hasAdsReceived || shouldHideBannerAd
         bannerView.isHidden = !hasAdsReceived || shouldHideBannerAd
         localAdsIndex += 1
-        
-        
+
+
         shouldHideBannerAd = !shouldHideBannerAd
-        
+
         self.localAdsView.image = nil
         if !hasAdsReceived {
             let img =  UIImage(named: previewImagesNames[localAdsIndex/2])
             self.localAdsView.image = img
         }
-        
+
         if localAdsIndex >= 3 {
             localAdsIndex = 0
         }
@@ -242,10 +244,10 @@ class AdMob_Banner_Ad: NSObject {
     // MARK: - Positioning Ad Banner
     private func addAdsView(_ adsView: UIView, toPosition position: Position) {
         adsView.removeFromSuperview()
-        
+
         adsView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(adsView)
-        
+
         switch position {
         case .top:
             positionBannerViewFullWidthAtTopOfSafeArea(adsView)
@@ -253,7 +255,7 @@ class AdMob_Banner_Ad: NSObject {
             positionBannerViewFullWidthAtBottomOfSafeArea(adsView)
         }
     }
-    
+
     private func positionBannerViewFullWidthAtBottomOfSafeArea(_ bannerView: UIView) {
         // Position the banner. Stick it to the bottom of the Safe Area.
         // Make it constrained to the edges of the safe area.
@@ -264,7 +266,7 @@ class AdMob_Banner_Ad: NSObject {
             guide.bottomAnchor.constraint(equalTo: bannerView.bottomAnchor)
             ])
     }
-    
+
     private func positionBannerViewFullWidthAtTopOfSafeArea(_ bannerView: UIView) {
         // Position the banner. Stick it to the top of the Safe Area.
         // Make it constrained to the edges of the safe area.
@@ -276,7 +278,7 @@ class AdMob_Banner_Ad: NSObject {
             ])
     }
 
-    
+
 }
 
 // MARK: - Delegation
@@ -286,45 +288,45 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
     /// Tells the delegate an ad request loaded an ad.
     func adViewDidReceiveAd(_ bannerView: GADBannerView) {
         loggingPrint("[Ads] \(#function)")
-        
+
         self.hasAdsReceived = true
-        
+
         if showOnReceive {
             show()
         }
     }
-    
+
     // added on 20230228 to fix online AD bar not shown on device
     func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
         loggingPrint("[Ads] bannerViewDidReceiveAd")
-        
+
         self.hasAdsReceived = true
-        
+
         if showOnReceive {
             show()
         }
     }
-    
+
     /// Tells the delegate an ad request failed.
     func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
         loggingPrint("[Ads] \(#function): desc: \(error.localizedDescription)")
-        
+
         self.hasAdsReceived = false
-        
+
         /// Note: If your ad fails to load, you don't need to explicitly request another one as long as you've configured your ad unit to refresh; the Google Mobile Ads SDK respects any refresh rate you specified in the AdMob UI.
     }
-    
+
     /// Tells the delegate that a full-screen view will be presented in response
     /// to the user clicking on an ad.
     func bannerViewWillPresentScreen(_ bannerView: GADBannerView) {
         loggingPrint("[Ads] \(#function)")
     }
-    
+
     /// Tells the delegate that the full-screen view will be dismissed.
     func bannerViewWillDismissScreen(_ bannerView: GADBannerView) {
         loggingPrint(#function)
    }
-    
+
     /// Tells the delegate that the full-screen view has been dismissed.
     func bannerViewDidDismissScreen(_ bannerView: GADBannerView) {
         loggingPrint(#function)
@@ -338,7 +340,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
 
 /* Usage sample:
 
- 
+
  // ad app id is configured in Info.plist
  var bannerAd = AdMob_Banner_Ad(adUnitID: "ca-app-pub-3940256099942544/2934735716",  // test id
                                toViewController: self,
@@ -349,7 +351,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
                                showOnReceive: true)
 bannerAd.load()
 bannerAd.show()
- 
+
 */
 
 
