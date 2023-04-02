@@ -7,10 +7,12 @@
 //
 
 /*
+v6.0:
+  - remove default interval time value, rename timeInterval to intervalSeconds to make unit more clear
 v5.0:
- - add `public func show(in vc: UIViewController)` to support change view controller when showing
+  - add `public func show(in vc: UIViewController)` to support change view controller when showing
 v4.0:
- - add `bannerViewDidReceiveAd(_ bannerView: GADBannerView)`, adViewDidReceiveAd() doesn't work anymore
+  - add `bannerViewDidReceiveAd(_ bannerView: GADBannerView)`, adViewDidReceiveAd() doesn't work anymore
 v3.0:
   - always show ads bar
   - test with sdk 7.64
@@ -63,8 +65,7 @@ class AdMob_Banner_Ad: NSObject {
     fileprivate var timer: Timer!
 
     // interval for  switch show/hide status of banner view , 0 to always show
-    fileprivate let minTimeInterval: TimeInterval = 10
-    fileprivate var timeInterval: TimeInterval = 10
+    fileprivate var intervalSeconds: TimeInterval = 10
 
 
     fileprivate var shouldHideBannerAd = false
@@ -99,14 +100,14 @@ class AdMob_Banner_Ad: NSObject {
                      at position: Position,
                      withOrientation orientation: Orientation,
                      withVolumeRatio volume: Float,
-                     timeInterval seconds: TimeInterval,
+                     intervalSeconds seconds: TimeInterval,
                      showOnReceive: Bool) {
 
         self.init()
 
         // use default 10 forever ***
-        timeInterval = (seconds < 1) ? minTimeInterval : seconds
-        loggingPrint("timeInterval = \(timeInterval)")
+        intervalSeconds = seconds
+        loggingPrint("intervalSeconds = \(timeInterval)")
 
         self.showOnReceive = showOnReceive
         self.position = position
@@ -161,9 +162,9 @@ class AdMob_Banner_Ad: NSObject {
 
     func setStatuesOfBannerView() {
 
-        loggingPrint("[Ads] set banner view show hide with time interval value ( \(self.timeInterval) ) ")
+        loggingPrint("[Ads] set banner view show hide with time interval value ( \(self.intervalSeconds) ) ")
 
-        if self.timeInterval > 0 {
+        if self.intervalSeconds > 0 {
             startTimer()
         } else {
             self.bannerView.isHidden = false
@@ -217,8 +218,8 @@ class AdMob_Banner_Ad: NSObject {
     // MARK: - private functions
 
     private func startTimer() {
-        if nil == self.timer && timeInterval > 0 {
-            self.timer = Timer.scheduledTimer(timeInterval: timeInterval,
+        if nil == self.timer && intervalSeconds > 0 {
+            self.timer = Timer.scheduledTimer(intervalSeconds: timeInterval,
                                               target: self,
                                               selector: #selector(switchBannerStatusForTimer),
                                               userInfo: nil,
@@ -340,7 +341,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
     /// Tells the delegate that the full-screen view has been dismissed.
     func bannerViewDidDismissScreen(_ bannerView: GADBannerView) {
         loggingPrint(#function)
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + intervalSeconds) { [weak self] in
             loggingPrint("reload after dismiss")
             self?.load()
         }
@@ -357,7 +358,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
                                at: .bottom,
                                withOrientation: .landscape,
                                withVolumeRatio: 0.1,
-                               timeInterval: 60,
+                               intervalSeconds: 60,
                                showOnReceive: true)
 bannerAd.load()
 bannerAd.show()
