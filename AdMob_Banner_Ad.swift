@@ -107,7 +107,7 @@ class AdMob_Banner_Ad: NSObject {
 
         // use default 10 forever ***
         intervalSeconds = seconds
-        loggingPrint("intervalSeconds = \(timeInterval)")
+        loggingPrint("intervalSeconds = \(intervalSeconds)")
 
         self.showOnReceive = showOnReceive
         self.position = position
@@ -219,7 +219,7 @@ class AdMob_Banner_Ad: NSObject {
 
     private func startTimer() {
         if nil == self.timer && intervalSeconds > 0 {
-            self.timer = Timer.scheduledTimer(intervalSeconds: timeInterval,
+            self.timer = Timer.scheduledTimer(timeInterval: intervalSeconds,
                                               target: self,
                                               selector: #selector(switchBannerStatusForTimer),
                                               userInfo: nil,
