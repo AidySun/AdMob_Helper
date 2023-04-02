@@ -121,8 +121,7 @@ class AdMob_Banner_Ad: NSObject {
     fileprivate func initEverything(adUnitID: String,
                                     toViewController rootViewController: UIViewController,
                                     withOrientation orientation: Orientation) {
-        self.vc = rootViewController
-        self.view = rootViewController.view
+        updateRootViewController(rootViewController)
 
         self.initAdsView(adUnitID: adUnitID,
                          withOrientation: orientation)
@@ -147,7 +146,6 @@ class AdMob_Banner_Ad: NSObject {
 
         // disable crash and purchase reporting, enable them if you want
         GADMobileAds.sharedInstance().disableSDKCrashReporting()
-        //GADMobileAds.sharedInstance().disableAutomatedInAppPurchaseReporting()
 
         let adSize = (orientation == .portrait) ? kGADAdSizeSmartBannerPortrait : kGADAdSizeSmartBannerLandscape
         bannerView = GADBannerView(adSize: adSize)
@@ -181,6 +179,11 @@ class AdMob_Banner_Ad: NSObject {
         }
     }
 
+    fileprivate func updateRootViewController(_ rootViewController: UIViewController) {
+        self.vc = rootViewController
+        self.view = rootViewController.view
+    }
+
     // MARK: - public functions
 
     public func load() {
@@ -193,7 +196,6 @@ class AdMob_Banner_Ad: NSObject {
         localAdsView.isHidden = hasAdsReceived
         bannerView.isHidden = !hasAdsReceived
 
-        //self.localAdsView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(adsViewClicked)))
         self.localAdsView.isUserInteractionEnabled = true
         let adsView: UIView = hasAdsReceived ? bannerView : localAdsView
 
@@ -201,8 +203,7 @@ class AdMob_Banner_Ad: NSObject {
     }
 
     public func show(in vc: UIViewController) {
-        self.vc = vc
-        bannerView.rootViewController = self.vc
+        updateRootViewController(vc)
 
         show()
     }
