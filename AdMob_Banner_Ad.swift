@@ -7,6 +7,8 @@
 //
 
 /*
+v5.0:
+ - add `public func show(in vc: UIViewController)` to support change view controller when showing
 v4.0:
  - add `bannerViewDidReceiveAd(_ bannerView: GADBannerView)`, adViewDidReceiveAd() doesn't work anymore
 v3.0:
@@ -49,6 +51,7 @@ class AdMob_Banner_Ad: NSObject {
     enum Orientation {case portrait, landscape}
 
     fileprivate var vc: UIViewController!
+
     var bannerView: GADBannerView!
     fileprivate var view: UIView!
 
@@ -194,6 +197,13 @@ class AdMob_Banner_Ad: NSObject {
         let adsView: UIView = hasAdsReceived ? bannerView : localAdsView
 
         addAdsView(adsView, toPosition: position)
+    }
+
+    public func show(in vc: UIViewController) {
+        self.vc = vc
+        bannerView.rootViewController = self.vc
+
+        show()
     }
 
     public func stop() {
