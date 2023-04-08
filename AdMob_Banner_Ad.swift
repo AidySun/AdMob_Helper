@@ -325,6 +325,12 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
 
         self.hasAdsReceived = false
 
+        DispatchQueue.main.asyncAfter(deadline: .now()+5) { [weak self] in
+            loggingPrint("reload after failed")
+            self?.load()
+        }
+
+
         /// Note: If your ad fails to load, you don't need to explicitly request another one as long as you've configured your ad unit to refresh; the Google Mobile Ads SDK respects any refresh rate you specified in the AdMob UI.
     }
 
