@@ -193,8 +193,8 @@ class AdMob_Banner_Ad: NSObject {
     // show online ads if received, else show local ads view
     public func show() {
 
-        localAdsView.isHidden = hasAdsReceived
-        bannerView.isHidden = !hasAdsReceived
+        localAdsView.isHidden = shouldHideBannerAd || hasAdsReceived
+        bannerView.isHidden = shouldHideBannerAd || !hasAdsReceived
 
         self.localAdsView.isUserInteractionEnabled = true
         let adsView: UIView = hasAdsReceived ? bannerView : localAdsView
@@ -214,6 +214,10 @@ class AdMob_Banner_Ad: NSObject {
             self.invalidateTimer()
             self.bannerView.isHidden = true
         }
+    }
+
+    public func setIsHidden(_ b: Bool) {
+        self.shouldHideBannerAd = b
     }
 
     // MARK: - private functions
