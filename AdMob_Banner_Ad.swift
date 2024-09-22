@@ -125,8 +125,6 @@ class AdMob_Banner_Ad: NSObject {
 
         self.initAdsView(adUnitID: adUnitID,
                          withOrientation: orientation)
-
-        self.initLocalAdsView(withOrientation: orientation)
     }
 
     fileprivate func initLocalAdsView(withOrientation orientation: Orientation) {
@@ -193,10 +191,10 @@ class AdMob_Banner_Ad: NSObject {
     // show online ads if received, else show local ads view
     public func show() {
 
-        localAdsView.isHidden = shouldHideBannerAd || hasAdsReceived
+        localAdsView.isHidden = true
         bannerView.isHidden = shouldHideBannerAd || !hasAdsReceived
 
-        self.localAdsView.isUserInteractionEnabled = true
+        self.localAdsView.isUserInteractionEnabled = false
         let adsView: UIView = hasAdsReceived ? bannerView : localAdsView
 
         addAdsView(adsView, toPosition: position)
@@ -234,7 +232,7 @@ class AdMob_Banner_Ad: NSObject {
 
 
     @objc private func switchBannerStatusForTimer() {
-        localAdsView.isHidden = hasAdsReceived || shouldHideBannerAd
+        localAdsView.isHidden = true
         bannerView.isHidden = !hasAdsReceived || shouldHideBannerAd
         localAdsIndex += 1
 
@@ -243,8 +241,8 @@ class AdMob_Banner_Ad: NSObject {
 
         self.localAdsView.image = nil
         if !hasAdsReceived {
-            let img =  UIImage(named: previewImagesNames[localAdsIndex/2])
-            self.localAdsView.image = img
+            // let img =  UIImage(named: previewImagesNames[localAdsIndex/2])
+            // self.localAdsView.image = img
         }
 
         if localAdsIndex >= 3 {
