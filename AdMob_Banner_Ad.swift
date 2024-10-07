@@ -328,7 +328,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
         self.hasAdsReceived = false
 
         DispatchQueue.main.asyncAfter(deadline: .now()+5) { [weak self] in
-            loggingPrint("reload after failed")
+            loggingPrint("[Ads] reload after failed")
             self?.load()
         }
 
