@@ -12,7 +12,7 @@ v6.0:
 v5.0:
   - add `public func show(in vc: UIViewController)` to support change view controller when showing
 v4.0:
-  - add `bannerViewDidReceiveAd(_ bannerView: GADBannerView)`, adViewDidReceiveAd() doesn't work anymore
+  - add `bannerViewDidReceiveAd(_ bannerView: BannerView)`, adViewDidReceiveAd() doesn't work anymore
 v3.0:
   - always show ads bar
   - test with sdk 7.64
@@ -54,7 +54,7 @@ class AdMob_Banner_Ad: NSObject {
 
     fileprivate var vc: UIViewController!
 
-    var bannerView: GADBannerView!
+    var bannerView: BannerView!
     fileprivate var view: UIView!
 
     fileprivate var hasAdsReceived = false
@@ -77,7 +77,7 @@ class AdMob_Banner_Ad: NSObject {
     class func startSDK() {
         // Initialize Google Mobile Ads SDK
 //        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = ["b37ec2debc0c40ce8abb3b202f685a36"]
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        MobileAds.shared.start(completionHandler: nil)
         loggingPrint("[Ads] initialization finished.")
     }
 
@@ -111,7 +111,7 @@ class AdMob_Banner_Ad: NSObject {
 
         self.showOnReceive = showOnReceive
         self.position = position
-        GADMobileAds.sharedInstance().applicationVolume = volume
+        MobileAds.shared.applicationVolume = volume
 
         self.initEverything(adUnitID: adUnitID,
                             toViewController: rootViewController,
@@ -145,10 +145,10 @@ class AdMob_Banner_Ad: NSObject {
                                 withOrientation orientation: Orientation) {
 
         // disable crash and purchase reporting, enable them if you want
-        GADMobileAds.sharedInstance().disableSDKCrashReporting()
+        MobileAds.shared.disableSDKCrashReporting()
 
         let adSize = (orientation == .portrait) ? kGADAdSizeSmartBannerPortrait : kGADAdSizeSmartBannerLandscape
-        bannerView = GADBannerView(adSize: adSize)
+        bannerView = BannerView(adSize: adSize)
         loggingPrint("[Ads] banner view size is \(bannerView.frame), ads size is \(bannerView.adSize)")
 
         bannerView.adUnitID = adUnitID
@@ -187,7 +187,7 @@ class AdMob_Banner_Ad: NSObject {
     // MARK: - public functions
 
     public func load() {
-        bannerView.load(GADRequest())
+        bannerView.load(Request())
     }
 
     // show online ads if received, else show local ads view
@@ -299,10 +299,10 @@ class AdMob_Banner_Ad: NSObject {
 
 // MARK: - Delegation
 
-extension AdMob_Banner_Ad: GADBannerViewDelegate {
+extension AdMob_Banner_Ad: BannerViewDelegate {
 
     /// Tells the delegate an ad request loaded an ad.
-    func adViewDidReceiveAd(_ bannerView: GADBannerView) {
+    func adViewDidReceiveAd(_ bannerView: BannerView) {
         loggingPrint("[Ads] \(#function)")
 
         self.hasAdsReceived = true
@@ -313,7 +313,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
     }
 
     // added on 20230228 to fix online AD bar not shown on device
-    func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
+    func bannerViewDidReceiveAd(_ bannerView: BannerView) {
         loggingPrint("[Ads] bannerViewDidReceiveAd")
 
         self.hasAdsReceived = true
@@ -324,7 +324,7 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
     }
 
     /// Tells the delegate an ad request failed.
-    func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+    func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
         loggingPrint("[Ads] \(#function): desc: \(error.localizedDescription)")
 
         self.hasAdsReceived = false
@@ -340,17 +340,17 @@ extension AdMob_Banner_Ad: GADBannerViewDelegate {
 
     /// Tells the delegate that a full-screen view will be presented in response
     /// to the user clicking on an ad.
-    func bannerViewWillPresentScreen(_ bannerView: GADBannerView) {
+    func bannerViewWillPresentScreen(_ bannerView: BannerView) {
         loggingPrint("[Ads] \(#function)")
     }
 
     /// Tells the delegate that the full-screen view will be dismissed.
-    func bannerViewWillDismissScreen(_ bannerView: GADBannerView) {
+    func bannerViewWillDismissScreen(_ bannerView: BannerView) {
         loggingPrint(#function)
    }
 
     /// Tells the delegate that the full-screen view has been dismissed.
-    func bannerViewDidDismissScreen(_ bannerView: GADBannerView) {
+    func bannerViewDidDismissScreen(_ bannerView: BannerView) {
         loggingPrint(#function)
         DispatchQueue.main.asyncAfter(deadline: .now() + intervalSeconds) { [weak self] in
             loggingPrint("reload after dismiss")
